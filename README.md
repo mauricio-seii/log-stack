@@ -39,13 +39,19 @@ The above command will:
 
 ## Intended use
 
-By placing a .log file in the `/log-stack/logs` directory, it should be parsed by the Go application and sent to Elasticsearch. Parsed logs can be visualized with Kibana at `http://localhost:5601`.
+This stack was created in response to lack of tools to check logs while in development phase. 
 
-Ideally, you should run the following command and if you want `env` and `service` keywords in your Elasticsearch indexes, then follow the pattern `service-name.env.log` and Logstash will extract those for you making it a bit easier to filter/search logs later on.
+### how to use
+
+* Place a .log file into `/log-stack/logs` directory
+* It should be parsed by the Go application and sent to Elasticsearch
+* Parsed logs can be visualized with Kibana at `http://localhost:5601`
+
+*side note: follow this standard when creating the .log file: `service-name.env.log` this will add keywords into the Elasticsearch index*
 
 ```bash
 # assuming you are already authenticated and can fetch containers logs
-kubectl -n dev logs deploy/deposit-bitgo > ~/Downloads/deposit-bitgo.dev.log
+kubectl -n dev logs deploy/my-service > ~/Downloads/my-service.dev.log
 
 # now copy the log file into the /logs directory where the project was cloned to
 cp ~/Downloads/deposit-bitgo.dev.log ~/github/log-stack/logs
