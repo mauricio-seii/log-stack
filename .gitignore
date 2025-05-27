@@ -1,0 +1,26 @@
+# Go binaries
+/logparser
+
+# Go modules (optional: ignore go.sum if you're okay with regenerating)
+/go.sum
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# Editor / IDE files
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Build / dependency directories
+/bin/
+/vendor/
+
+# Docker volumes (optional)
+logs/
+
+# OS files
+Thumbs.db
+
