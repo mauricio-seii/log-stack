@@ -36,14 +36,36 @@ func ProcessLogFile(logPath, udpAddr, parsedDir string) error {
 	scanner := bufio.NewScanner(f)
 	buf := make([]byte, 0, 1024*1024) // 1MB initial buffer
 	scanner.Buffer(buf, 1024*1024)    // max token size 1MB
-	for scanner.Scan() {
-		line := scanner.Text()
-		logLine := fmt.Sprintf("{\"service\":\"%s\",\"environment\":\"%s\",\"message\":\"%s\"}\n", serviceName, env, escapeJSON(line))
+
+	timestampRegex := regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}`)
+	var buffer strings.Builder
+
+	flushBuffer := func() {
+		if buffer.Len() == 0 {
+			return
+		}
+		logLine := fmt.Sprintf(
+			"{\"service\":\"%s\",\"environment\":\"%s\",\"message\":\"%s\"}\n",
+			serviceName, env, escapeJSON(buffer.String()),
+		)
 		_, err := conn.Write([]byte(logLine))
 		if err != nil {
-			return fmt.Errorf("[parser] failed to send UDP data: %w", err)
+			log.Printf("[parser] Failed to send UDP data: %v", err)
 		}
+		buffer.Reset()
 	}
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if timestampRegex.MatchString(line) {
+			flushBuffer()
+		} else if buffer.Len() > 0 {
+			buffer.WriteString("\n")
+		}
+		buffer.WriteString(line)
+	}
+
+	flushBuffer()
 
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("[parser] scanner error: %w", err)
